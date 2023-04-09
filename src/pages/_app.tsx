@@ -7,7 +7,7 @@ import "~/styles/globals.css";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
-    <ClerkProvider {...pageProps}>
+    <ClerkProvider {...pageProps} frontendApi={process.env.NEXT_PUBLIC_CLERK_FRONTEND_API}>
       <Component {...pageProps} />
     </ClerkProvider>
   );
