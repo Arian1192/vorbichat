@@ -1,9 +1,12 @@
 import { useUser } from "@clerk/nextjs";
+import { useClerk } from "@clerk/nextjs";
 import { MagicSpinner } from "react-spinners-kit";
 import Avatar from "components/avatar/Avatar";
+import SignOutButton from "components/signOutButton/SignOutButton";
 
 const ProfilePage = () => {
   const { isLoaded, isSignedIn, user } = useUser();
+  const { signOut } = useClerk();
   console.log(user);
 
   return (
@@ -38,23 +41,24 @@ const ProfilePage = () => {
               </span>
             </h3>
             <div className="divider mx-auto w-[80%]">Info</div>
-            <div>
-              <h3 className="xl:text-sm">
+            <div className="w-[64] flex flex-col">
+              <h3 className="xl:text-sm text-center">
                 Email:{" "}
                 <span className="mx-auto text-info">
                   {user.emailAddresses[0]?.emailAddress}
                 </span>
               </h3>
-              <h3 className="mb-5 xl:text-sm">
+              <h3 className="mb-5 xl:text-sm text-center">
                 Phone:{" "}
                 <span className="mx-auto text-info">
                   {!user.primaryPhoneNumber && "xxxxxxxxx"}
                   {user.primaryPhoneNumber && user.primaryPhoneNumberId}
                 </span>
               </h3>
+              <SignOutButton />
             </div>
           </div>
-          <div className="border md:col-span-5 2xl:col-span-6">
+          <div className="border md:col-span-5 xl:col-span-6">
             Other Stuff to change if the user want
           </div>
           <div className="border md:col-span-8">Other shits</div>
