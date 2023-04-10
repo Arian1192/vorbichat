@@ -1,8 +1,7 @@
 import { useUser } from "@clerk/nextjs";
-
 interface IAvatarProps {
-  size: string;
-  typeMask: string;
+  size?: string;
+  typeMask?: string;
   urlProfile: string;
   isOnline?: string;
 }
@@ -31,10 +30,17 @@ const Avatar = (props: IAvatarProps) => {
 
   return (
     <div className="flex items-center justify-center">
-      <div className={`${isOnline} avatar`} onClick={handleClik}>
-        <div className={`mask ${size} ${typeMask ? typeMask: 'rounded-full'}`}>
+      <div
+        className={`${isOnline ? isOnline : "offline"} avatar`}
+        onClick={handleClik}
+      >
+        <div
+          className={`mask ${size ? size : "w-24"} ${
+            typeMask ? typeMask : "rounded-full"
+          }`}
+        >
           <div>
-            <img src={urlProfile} />
+            <img src={urlProfile} alt="User Profile Image" />
           </div>
         </div>
       </div>
