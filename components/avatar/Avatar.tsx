@@ -1,13 +1,13 @@
 import { useUser } from "@clerk/nextjs";
 interface IAvatarProps {
   size?: string;
-  typeMask?: string;
   urlProfile: string;
   isOnline?: string;
+  typeMask?: string;
 }
 
 const Avatar = (props: IAvatarProps) => {
-  const { size, typeMask, urlProfile, isOnline } = props;
+  const { size, urlProfile, typeMask, isOnline } = props;
   const { user, isLoaded } = useUser();
 
   const handleClik = () => {
@@ -35,13 +35,14 @@ const Avatar = (props: IAvatarProps) => {
         onClick={handleClik}
       >
         <div
-          className={`mask ${size ? size : "w-24"} ${
-            typeMask ? typeMask : "rounded-full"
-          }`}
+          className={`${size ? size : "w-24"} ${
+            typeMask ? typeMask : "mask-squircle"
+          }
+          }
+          mask
+          `}
         >
-          <div>
-            <img src={urlProfile} alt="User Profile Image" />
-          </div>
+          <img src={urlProfile} alt="User Profile Image" />
         </div>
       </div>
     </div>

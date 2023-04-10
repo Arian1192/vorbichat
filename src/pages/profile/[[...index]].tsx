@@ -3,6 +3,7 @@ import { useClerk } from "@clerk/nextjs";
 import { MagicSpinner } from "react-spinners-kit";
 import Avatar from "components/avatar/Avatar";
 import SignOutButton from "components/signOutButton/SignOutButton";
+import ThemeSwitcher from "components/themeSwitcher/ThemeSwitcher";
 
 const ProfilePage = () => {
   const { isLoaded, isSignedIn, user } = useUser();
@@ -24,9 +25,10 @@ const ProfilePage = () => {
             <Avatar
               isOnline={`${isSignedIn ? "online" : "offline"}`} // se setea mal
               size="w-32"
-              typeMask="rounded-full"
+              // typeMask="rounded-full"
               urlProfile={user.profileImageUrl}
             />
+
             <p className="mx-auto mt-4">Edit Avatar 🛠️</p>
             <h3>
               Created:{" "}
@@ -41,21 +43,24 @@ const ProfilePage = () => {
               </span>
             </h3>
             <div className="divider mx-auto w-[80%]">Info</div>
-            <div className="w-[64] flex flex-col">
-              <h3 className="xl:text-sm text-center">
+            <div className="flex w-[64] flex-col">
+              <h3 className="text-center xl:text-sm">
                 Email:{" "}
                 <span className="mx-auto text-info">
                   {user.emailAddresses[0]?.emailAddress}
                 </span>
               </h3>
-              <h3 className="mb-5 xl:text-sm text-center">
+              <h3 className="mb-5 text-center xl:text-sm">
                 Phone:{" "}
                 <span className="mx-auto text-info">
                   {!user.primaryPhoneNumber && "xxxxxxxxx"}
                   {user.primaryPhoneNumber && user.primaryPhoneNumberId}
                 </span>
               </h3>
-              <SignOutButton />
+              <div className="flex justify-between">
+                <SignOutButton />
+                <ThemeSwitcher />
+              </div>
             </div>
           </div>
           <div className="border md:col-span-5 xl:col-span-6">
