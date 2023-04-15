@@ -1,14 +1,38 @@
 import { useUser } from "@clerk/nextjs";
-import { useClerk } from "@clerk/nextjs";
+import { useForm } from "react-hook-form";
+import type  {SubmitHandler} from "react-hook-form"
 import { MagicSpinner } from "react-spinners-kit";
 import Avatar from "components/avatar/Avatar";
 import SignOutButton from "components/signOutButton/SignOutButton";
 import ThemeSwitcher from "components/themeSwitcher/ThemeSwitcher";
+import { api } from "../../utils/api";
+
+import type { IOrganization } from "~/types/IOrganization";
 
 const ProfilePage = () => {
   const { isLoaded, isSignedIn, user } = useUser();
-  const { signOut } = useClerk();
-  console.log(user);
+  const { handleSubmit, register, reset } = useForm<ICreateOrganization>();
+
+  const createOrgMutation = api.organization.createOrganization.useMutation();
+
+  interface ICreateOrganization extends IOrganization {
+    ownerId: string;
+  }
+
+  const onSubmit: SubmitHandler<ICreateOrganization> = (data) => {
+    createOrgMutation.mutate({
+      ...data,
+      ownerId: user?.id as string,
+      ownerName: user?.fullName as string,
+    });
+    reset();
+  };
+
+  // const organizationQuery = api.organization.getOrganizations.useQuery();
+  const infoOrganizationID = api.organization.getOrganizationById.useQuery({
+    id: "643ac1ffb8fdfd6d2eb69176",
+  });
+  
 
   return (
     <>
@@ -63,8 +87,26 @@ const ProfilePage = () => {
               </div>
             </div>
           </div>
-          <div className="border md:col-span-5 xl:col-span-6">
-            Other Stuff to change if the user want
+          <div className="border p-5 md:col-span-5 xl:col-span-6">
+            <div className="flex h-auto max-w-xs items-center justify-center rounded-md border border-base-300  p-4 shadow-xl">
+              <div className="form-control flex w-full max-w-xs">
+                <h3 className="mb-5">Create new organization</h3>
+                <form onSubmit={handleSubmit(onSubmit)}>
+                  <label className="label">
+                    <span className="label-text-alt">Organization Name</span>
+                  </label>
+                  <input
+                    type="text"
+                    {...register("name")}
+                    placeholder="Name of new organization"
+                    className="input-bordered input w-full max-w-xs"
+                  />
+                  <div className="flex justify-end">
+                    <input type="submit" className="btn-sm btn my-5" />
+                  </div>
+                </form>
+              </div>
+            </div>
           </div>
           <div className="border md:col-span-8">Other shits</div>
         </div>
