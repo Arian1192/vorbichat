@@ -2,15 +2,17 @@
 import React, { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useForm } from "react-hook-form";
-import type { SubmitHandler } from "react-hook-form";
 import { MagicSpinner } from "react-spinners-kit";
+import { api } from "~/utils/api";
+import type { SubmitHandler } from "react-hook-form";
+import type { IOrganization } from "~/types/IOrganization";
 import Avatar from "components/avatar/Avatar";
 import SignOutButton from "components/signOutButton/SignOutButton";
 import ThemeSwitcher from "components/themeSwitcher/ThemeSwitcher";
 import CreateOrgButton from "components/createOrgButton/CreateOrgButton";
 import OrgTable from "components/orgTable/OrgTable";
-import { api } from "~/utils/api";
-import type { IOrganization } from "~/types/IOrganization";
+
+
 
 export interface ICreateOrganization {
   ownerName: string;
@@ -20,11 +22,20 @@ export interface ICreateOrganization {
   ownerUrlImage: string;
 }
 
+export interface IEnrollOrganization {
+  newParticipant: string;
+  participantUrlImage: string;
+  organizationId: string;
+}
+
 const ProfilePage = () => {
   const [mutate, setMutate] = useState<boolean>(false);
+  const [enroll, setEnroll] = useState<boolean>(false);
   const { isLoaded, isSignedIn, user } = useUser();
   const [myOrganizations, setMyOrganizations] = useState<IOrganization[]>([]);
   const [errorMutate, setErrorMutate] = useState<boolean>(false);
+
+  // Mutations
   const createOrgMutation = api.organization.createOrganization.useMutation({
     onMutate() {
       setMutate(true);
@@ -37,7 +48,14 @@ const ProfilePage = () => {
     },
   });
 
-  const { register, reset, handleSubmit, formState: {errors} } = useForm<ICreateOrganization>();
+  const enrollOrgMutation = api.organization.enrollOrganization.useMutation();
+
+  const {
+    register,
+    reset,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ICreateOrganization>();
 
   const onSubmit: SubmitHandler<ICreateOrganization> = (data) => {
     createOrgMutation.mutate({
@@ -49,14 +67,23 @@ const ProfilePage = () => {
     reset();
   };
 
-  const Org = api.organization.getOrganizationByUser.useQuery({userId: user?.id as string})
+  const onEnroll: SubmitHandler<IEnrollOrganization> = (data) => {
+    enrollOrgMutation.mutate({
+      ...data,
+      participantUrlImage: user?.profileImageUrl as string,
+      newParticipant: user?.id as string,
+    });
+  };
+
+  const Org = api.organization.getOrganizationByUser.useQuery({
+    userId: user?.id as string,
+  });
 
   useEffect(() => {
     if (Org.data !== undefined) {
       setMyOrganizations(Org.data.OrganizationFound);
     }
   }, [Org.data]);
-
 
   return (
     <>
@@ -112,29 +139,87 @@ const ProfilePage = () => {
             </div>
           </div>
           <div className="flex gap-10  p-5 max-md:flex-col md:col-span-5 xl:col-span-6">
-            <div className="flex h-64 max-w-lg items-center justify-center rounded-md border border-base-300 p-4  shadow-xl max-md:mx-auto">
-              <div className="form-control flex m-10">
-                <h3 className="mt-5 mb-2 font-bold">Create new organization</h3>
-                <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col">
-                  <label className="label">
-                    <span className="label-text-alt">Organization Name</span>
-                  </label>
-                  <input
-                    type="text"
-                    {...register("name", {required: true })}
-                    placeholder="Name of new organization"
-                    className="input-bordered input w-full max-w-xs mb-4"
-                  />
-                  {errors.name && <span className="text-error">⚠️ This field is required</span>}
-                  
-                  <div className="flex justify-end">
-                    <CreateOrgButton
-                      mutate={mutate}
-                      errorMutate={errorMutate}
+            <div className="flex h-64 max-w-lg items-center justify-center rounded-md border border border-base-300 p-4  shadow-xl max-md:mx-auto">
+              {!enroll && (
+                <div className="form-control m-10 flex">
+                  <h3 className="mb-2 mt-5 font-bold">
+                    Create new organization
+                  </h3>
+                  <form
+                    onSubmit={handleSubmit(onSubmit)}
+                    className="flex flex-col"
+                  >
+                    <label className="label">
+                      <span className="label-text-alt">Organization Name</span>
+                    </label>
+                    <input
+                      type="text"
+                      {...register("name", { required: true })}
+                      placeholder="Name of new organization"
+                      className="input-bordered input mb-4 w-full max-w-xs"
                     />
-                  </div>
-                </form>
-              </div>
+                    {errors.name && (
+                      <span className="text-error">
+                        ⚠️ This field is required
+                      </span>
+                    )}
+
+                    <div className="flex justify-between gap-5">
+                      <button
+                        className="btn-info btn my-5 gap-2"
+                        onClick={() => setEnroll(!enroll)}
+                      >
+                        Go to Enroll
+                      </button>
+                      <CreateOrgButton
+                        mutate={mutate}
+                        errorMutate={errorMutate}
+                        text={enroll}
+                      />
+                    </div>
+                  </form>
+                </div>
+              )}
+              {enroll && (
+                <div className="form-control m-10 flex">
+                  <h3 className="mb-2 mt-5 font-bold">
+                    Enroll to organization
+                  </h3>
+                  <form
+                    onSubmit={handleSubmit(onEnroll)}
+                    className="flex flex-col"
+                  >
+                    <label className="label">
+                      <span className="label-text-alt">Organization ID</span>
+                    </label>
+                    <input
+                      type="text"
+                      {...register("organizationId", { required: true })}
+                      placeholder="ID of the organization to enroll"
+                      className="input-bordered input mb-4 w-full max-w-xs"
+                    />
+                    {errors.name && (
+                      <span className="text-error">
+                        ⚠️ This field is required
+                      </span>
+                    )}
+
+                    <div className="flex justify-between gap-5">
+                      <button
+                        className="btn-info btn my-5 gap-2"
+                        onClick={() => setEnroll(!enroll)}
+                      >
+                        Go to Create
+                      </button>
+                      <CreateOrgButton
+                        mutate={mutate}
+                        errorMutate={errorMutate}
+                        text={enroll}
+                      />
+                    </div>
+                  </form>
+                </div>
+              )}
             </div>
 
             <OrgTable OrganizationsFounded={myOrganizations} />
@@ -148,7 +233,4 @@ const ProfilePage = () => {
 
 export default ProfilePage;
 
-
-
 //TODO: Only share with the user, the organizations that he is the owner or participant, is not then, not show it.
-

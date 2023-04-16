@@ -1,10 +1,11 @@
-
 interface ICreateOrgButton {
   mutate: boolean;
   errorMutate: boolean;
+  text: boolean;
 }
 
-const CreateOrgButton = ({ mutate, errorMutate }: ICreateOrgButton) => {
+const CreateOrgButton = ({ mutate, errorMutate, text }: ICreateOrgButton) => {
+  console.log(text)
   return (
     <>
       <button
@@ -36,7 +37,7 @@ const CreateOrgButton = ({ mutate, errorMutate }: ICreateOrgButton) => {
             )}
           </svg>
         )}
-        Create
+        {text ? "Enroll" : "Create"}
       </button>
     </>
   );

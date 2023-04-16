@@ -26,9 +26,32 @@ export const organizationRouter = createTRPCRouter({
                 newOrganization.participants.push(input.ownerId)
                 newOrganization.urlImageParicipants.push(input.ownerUrlImage)
                 await newOrganization.save()
-            } catch {
+            } catch (err) {
+                console.log(err)
             }
         }),
+
+    // Update
+    enrollOrganization: publicProcedure
+        .input(z.object({
+            newParticipant: z.string(),
+            participantUrlImage: z.string(),
+            organizationId: z.string(),
+        }))
+        .mutation(async ({ input }) => {
+            const { organizationId, participantUrlImage, newParticipant } = input
+            try {
+                const organization = await Organization.findById<IOrganization>(organizationId).exec()
+                if (organization) {
+                    organization.participants.push(newParticipant)
+                    organization.urlImageParicipants.push(participantUrlImage)
+                    await organization.save()
+                }
+            } catch (err) {
+                console.log(err)
+            }
+        }),
+
 
 
     // Read
