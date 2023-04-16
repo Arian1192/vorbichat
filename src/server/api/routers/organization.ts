@@ -17,12 +17,14 @@ export const organizationRouter = createTRPCRouter({
                 if (organizationExist) throw new Error("Organization already exist")
                 return true
             }),
+            ownerUrlImage: z.string(),
             participants: z.array(z.string()).optional()
         }))
         .mutation(async ({ input }) => {
             try {
                 const newOrganization = new Organization(input)
                 newOrganization.participants.push(input.ownerId)
+                newOrganization.urlImageParicipants.push(input.ownerUrlImage)
                 await newOrganization.save()
             } catch {
             }
@@ -43,6 +45,16 @@ export const organizationRouter = createTRPCRouter({
             }
         }),
 
+    getOrganizationByUser: publicProcedure
+        .input(z.object({
+            userId: z.string()
+        })).query(async ({ input }) => {
+            console.log(input.userId)
+            const getOrganizationByUser: IOrganization[] | null = await Organization.find<IOrganization>({ participants: input.userId }).exec()
+            return {
+                OrganizationFound: getOrganizationByUser
+            }
+        }),
 
     getOrganizationById: publicProcedure
         .input(z.object({

@@ -13,7 +13,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
       frontendApi={process.env.NEXT_PUBLIC_CLERK_FRONTEND_API}
     >
       <ThemeProvider
-        value={{ light: "cmyk", dark: "business", system: "business" }}
+        value={{ light: "emerald", dark: "dracula", system: "business" }}
       >
         <Component {...pageProps} />
       </ThemeProvider>

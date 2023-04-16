@@ -1,6 +1,5 @@
 import { SignIn } from "@clerk/nextjs";
 
-const 
 
 const SignInPage = () => {
   return (

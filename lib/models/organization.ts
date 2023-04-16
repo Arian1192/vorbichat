@@ -5,6 +5,7 @@ const organizationSchema = new Schema<IOrganization>({
     ownerName: String,
     name: { type: String, unique: true },
     participants: [String],
+    urlImageParicipants: [String],
 })
 
 export const Organization: Model<IOrganization> = models.Organization || model('Organization', organizationSchema)

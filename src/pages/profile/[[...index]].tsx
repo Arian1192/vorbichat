@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
@@ -8,18 +8,22 @@ import Avatar from "components/avatar/Avatar";
 import SignOutButton from "components/signOutButton/SignOutButton";
 import ThemeSwitcher from "components/themeSwitcher/ThemeSwitcher";
 import CreateOrgButton from "components/createOrgButton/CreateOrgButton";
+import OrgTable from "components/orgTable/OrgTable";
 import { api } from "~/utils/api";
+import type { IOrganization } from "~/types/IOrganization";
 
 export interface ICreateOrganization {
   ownerName: string;
   name: string;
   participants: string[];
   ownerId: string;
+  ownerUrlImage: string;
 }
 
 const ProfilePage = () => {
   const [mutate, setMutate] = useState<boolean>(false);
   const { isLoaded, isSignedIn, user } = useUser();
+  const [myOrganizations, setMyOrganizations] = useState<IOrganization[]>([]);
   const [errorMutate, setErrorMutate] = useState<boolean>(false);
   const createOrgMutation = api.organization.createOrganization.useMutation({
     onMutate() {
@@ -33,20 +37,26 @@ const ProfilePage = () => {
     },
   });
 
-  const { register, reset, handleSubmit } = useForm<ICreateOrganization>();
+  const { register, reset, handleSubmit, formState: {errors} } = useForm<ICreateOrganization>();
 
   const onSubmit: SubmitHandler<ICreateOrganization> = (data) => {
     createOrgMutation.mutate({
       ...data,
       ownerId: user?.id as string,
+      ownerUrlImage: user?.profileImageUrl as string,
       ownerName: user?.fullName as string,
     });
     reset();
   };
 
-  console.log(mutate);
+  const Org = api.organization.getOrganizationByUser.useQuery({userId: user?.id as string})
 
-  const Organizations = api.organization.getOrganizations.useQuery();
+  useEffect(() => {
+    if (Org.data !== undefined) {
+      setMyOrganizations(Org.data.OrganizationFound);
+    }
+  }, [Org.data]);
+
 
   return (
     <>
@@ -101,20 +111,22 @@ const ProfilePage = () => {
               </div>
             </div>
           </div>
-          <div className="border p-5 md:col-span-5 xl:col-span-6">
-            <div className="flex h-auto max-w-xs items-center justify-center rounded-md border border-base-300  p-4 shadow-xl">
-              <div className="form-control flex w-full max-w-xs">
-                <h3 className="mb-5">Create new organization</h3>
-                <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="flex gap-10  p-5 max-md:flex-col md:col-span-5 xl:col-span-6">
+            <div className="flex h-64 max-w-lg items-center justify-center rounded-md border border-base-300 p-4  shadow-xl max-md:mx-auto">
+              <div className="form-control flex m-10">
+                <h3 className="mt-5 mb-2 font-bold">Create new organization</h3>
+                <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col">
                   <label className="label">
                     <span className="label-text-alt">Organization Name</span>
                   </label>
                   <input
                     type="text"
-                    {...register("name")}
+                    {...register("name", {required: true })}
                     placeholder="Name of new organization"
-                    className="input-bordered input w-full max-w-xs"
+                    className="input-bordered input w-full max-w-xs mb-4"
                   />
+                  {errors.name && <span className="text-error">⚠️ This field is required</span>}
+                  
                   <div className="flex justify-end">
                     <CreateOrgButton
                       mutate={mutate}
@@ -124,7 +136,8 @@ const ProfilePage = () => {
                 </form>
               </div>
             </div>
-            
+
+            <OrgTable OrganizationsFounded={myOrganizations} />
           </div>
           <div className="border md:col-span-8">Other shits</div>
         </div>
@@ -134,3 +147,8 @@ const ProfilePage = () => {
 };
 
 export default ProfilePage;
+
+
+
+//TODO: Only share with the user, the organizations that he is the owner or participant, is not then, not show it.
+
