@@ -27,7 +27,14 @@ const config = {
         prefer: "type-imports",
         fixStyle: "inline-type-imports",
       },
+      
     ],
+    "@typescript-eslint/restrict-template-expressions" :[
+      "warn",
+      {
+        allowBoolean: true,
+      }
+    ]
     
   },
 };

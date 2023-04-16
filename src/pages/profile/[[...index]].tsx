@@ -1,23 +1,39 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
+import React, { useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useForm } from "react-hook-form";
-import type  {SubmitHandler} from "react-hook-form"
+import type { SubmitHandler } from "react-hook-form";
 import { MagicSpinner } from "react-spinners-kit";
 import Avatar from "components/avatar/Avatar";
 import SignOutButton from "components/signOutButton/SignOutButton";
 import ThemeSwitcher from "components/themeSwitcher/ThemeSwitcher";
-import { api } from "../../utils/api";
+import CreateOrgButton from "components/createOrgButton/CreateOrgButton";
+import { api } from "~/utils/api";
 
-import type { IOrganization } from "~/types/IOrganization";
+export interface ICreateOrganization {
+  ownerName: string;
+  name: string;
+  participants: string[];
+  ownerId: string;
+}
 
 const ProfilePage = () => {
+  const [mutate, setMutate] = useState<boolean>(false);
   const { isLoaded, isSignedIn, user } = useUser();
-  const { handleSubmit, register, reset } = useForm<ICreateOrganization>();
+  const [errorMutate, setErrorMutate] = useState<boolean>(false);
+  const createOrgMutation = api.organization.createOrganization.useMutation({
+    onMutate() {
+      setMutate(true);
+    },
+    onSuccess() {
+      setMutate(false);
+    },
+    onError() {
+      setErrorMutate(true);
+    },
+  });
 
-  const createOrgMutation = api.organization.createOrganization.useMutation();
-
-  interface ICreateOrganization extends IOrganization {
-    ownerId: string;
-  }
+  const { register, reset, handleSubmit } = useForm<ICreateOrganization>();
 
   const onSubmit: SubmitHandler<ICreateOrganization> = (data) => {
     createOrgMutation.mutate({
@@ -28,11 +44,9 @@ const ProfilePage = () => {
     reset();
   };
 
-  // const organizationQuery = api.organization.getOrganizations.useQuery();
-  const infoOrganizationID = api.organization.getOrganizationById.useQuery({
-    id: "643ac1ffb8fdfd6d2eb69176",
-  });
-  
+  console.log(mutate);
+
+  const Organizations = api.organization.getOrganizations.useQuery();
 
   return (
     <>
@@ -102,11 +116,15 @@ const ProfilePage = () => {
                     className="input-bordered input w-full max-w-xs"
                   />
                   <div className="flex justify-end">
-                    <input type="submit" className="btn-sm btn my-5" />
+                    <CreateOrgButton
+                      mutate={mutate}
+                      errorMutate={errorMutate}
+                    />
                   </div>
                 </form>
               </div>
             </div>
+            
           </div>
           <div className="border md:col-span-8">Other shits</div>
         </div>
